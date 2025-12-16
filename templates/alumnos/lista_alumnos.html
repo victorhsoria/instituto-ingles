@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Alumnos{% endblock %}
+
+{% block content %}
+<style>
+  /* Tarjeta principal */
+  .alumnos-card-header {
+    background: linear-gradient(90deg, #0d6efd, #6610f2);
+    color: #fff;
+  }
+
+  .alumnos-card-header h1,
+  .alumnos-card-header p {
+    color: #fff;
+  }
+
+  /* Chips de curso con buen contraste */
+  .chip-curso {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .chip-curso-children {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .chip-curso-kids {
+    background-color: #cff4fc;
+    color: #055160;
+  }
+
+  .chip-curso-juniors {
+    background-color: #e2e3ff;
+    color: #1b1f5f;
+  }
+
+  .chip-curso-intensivo {
+    background-color: #d1e7dd;
+    color: #0f5132;
+  }
+
+  .chip-curso-crash {
+    background-color: #f8d7da;
+    color: #842029;
+  }
+
+  /* Hover de filas para mejor lectura */
+  .table.alumnos-table tbody tr:hover {
+    background-color: #f5f7ff;
+  }
+</style>
+
+<div class="card shadow-sm border-0">
+  <div class="card-header alumnos-card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="h3 mb-1">Alumnos</h1>
+      <p class="mb-0">Gestión de alumnos del instituto.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'reporte_alumnos_sin_pago' %}" class="btn btn-outline-light btn-sm">
+        Ver alumnos sin pago
+      </a>
+      <a href="{% url 'crear_alumno' %}" class="btn btn-light btn-sm text-primary fw-semibold">
+        + Nuevo alumno
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Filtros -->
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-md-4">
+        <label class="form-label mb-1">Curso</label>
+        <select name="curso" class="form-select form-select-sm">
+          <option value="">Todos</option>
+          {% for value, label in cursos %}
+            <option value="{{ value }}" {% if curso_seleccionado == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label mb-1">Buscar (nombre, apellido o DNI)</label>
+        <input
+          type="text"
+          name="q"
+          value="{{ q }}"
+          class="form-control form-control-sm"
+          placeholder="Ej: García, 12345678..."
+        >
+      </div>
+
+      <div class="col-md-4 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary btn-sm">
+          Buscar
+        </button>
+        <a href="{% url 'lista_alumnos' %}" class="btn btn-outline-secondary btn-sm">
+          Limpiar
+        </a>
+      </div>
+    </form>
+
+    {% if curso_seleccionado or q %}
+      <div class="alert alert-info py-2 small d-flex justify-content-between align-items-center">
+        <div>
+          <strong>Filtros activos:</strong>
+          {% if curso_seleccionado %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1">
+              Curso: 
+              {% for value, label in cursos %}
+                {% if value == curso_seleccionado %}{{ label }}{% endif %}
+              {% endfor %}
+            </span>
+          {% endif %}
+          {% if q %}
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1">
+              Búsqueda: “{{ q }}”
+            </span>
+          {% endif %}
+        </div>
+        <a href="{% url 'lista_alumnos' %}" class="text-decoration-none small">
+          Quitar filtros
+        </a>
+      </div>
+    {% endif %}
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle alumnos-table">
+        <thead class="table-light">
+          <tr>
+            <th class="text-muted small">#</th>
+            <th>Alumno</th>
+            <th>DNI</th>
+            <th>Curso</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if page_obj %}
+            {% for alumno in page_obj %}
+              <tr>
+                <td class="text-muted small">
+                  {{ forloop.counter0|add:page_obj.start_index }}
+                </td>
+                <td>
+                  <div class="fw-semibold">
+                    {{ alumno.apellido }}, {{ alumno.nombre }}
+                  </div>
+                  {% if alumno.padre_o_tutor %}
+                    <div class="small text-muted">
+                      Tutor: {{ alumno.padre_o_tutor }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td>{{ alumno.dni }}</td>
+                <td>
+                  {% with curso_label=alumno.get_curso_display %}
+                    <span class="chip-curso
+                      {% if "PLAY" in curso_label or "CHILDREN" in curso_label %}
+                        chip-curso-children
+                      {% elif "KIDS" in curso_label %}
+                        chip-curso-kids
+                      {% elif "JUNIORS" in curso_label %}
+                        chip-curso-juniors
+                      {% elif "INTENSIVE" in curso_label %}
+                        chip-curso-intensivo
+                      {% elif "CRASH" in curso_label %}
+                        chip-curso-crash
+                      {% else %}
+                        chip-curso-children
+                      {% endif %}
+                    ">
+                      {{ curso_label }}
+                    </span>
+                  {% endwith %}
+                </td>
+                <td>
+                  {% if alumno.telefono %}
+                    {{ alumno.telefono }}
+                  {% else %}
+                    <span class="text-muted small">Sin teléfono</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <a
+                      href="{% url 'detalle_alumno' alumno.pk %}"
+                      class="btn btn-outline-secondary"
+                    >
+                      Ver
+                    </a>
+                    <a
+                      href="{% url 'editar_alumno' alumno.pk %}"
+                      class="btn btn-outline-primary"
+                    >
+                      Editar
+                    </a>
+                    <a
+                      href="{% url 'eliminar_alumno' alumno.pk %}"
+                      class="btn btn-outline-danger"
+                    >
+                      Eliminar
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">
+                No se encontraron alumnos con esos filtros.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if page_obj and page_obj.paginator.num_pages > 1 %}
+      <nav aria-label="Paginación de alumnos">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link"
+                 href="?page={{ page_obj.previous_page_number }}&curso={{ curso_seleccionado }}&q={{ q }}">
+                Anterior
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Anterior</span>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ num }}&curso={{ curso_seleccionado }}&q={{ q }}">
+                  {{ num }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link"
+                 href="?page={{ page_obj.next_page_number }}&curso={{ curso_seleccionado }}&q={{ q }}">
+                Siguiente
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Siguiente</span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

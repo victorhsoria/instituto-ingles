@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Calificaciones{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">
+      <i class="bi bi-clipboard-check me-2"></i> Calificaciones
+    </h1>
+    <p class="text-muted mb-0">
+      Historial de exámenes y calificaciones de todos los alumnos.
+    </p>
+  </div>
+  <div>
+    <a href="{% url 'crear_calificacion' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i> Nueva calificación
+    </a>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6">
+        <label class="form-label">Buscar</label>
+        <input
+          type="text"
+          name="q"
+          value="{{ q }}"
+          class="form-control"
+          placeholder="Alumno, DNI o materia/examen"
+        >
+      </div>
+      <div class="col-md-3 text-md-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
+        <a href="{% url 'lista_calificaciones' %}" class="btn btn-outline-secondary ms-1">
+          Limpiar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Fecha</th>
+            <th>Alumno</th>
+            <th>Materia / Examen</th>
+            <th>Calificación</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if page_obj %}
+            {% for cal in page_obj %}
+              <tr>
+                <td>{{ cal.fecha_examen|date:"d/m/Y" }}</td>
+                <td>
+                  <a href="{% url 'detalle_alumno' cal.alumno.pk %}" class="text-decoration-none">
+                    {{ cal.alumno.apellido }}, {{ cal.alumno.nombre }}
+                  </a>
+                  <div class="small text-muted">
+                    DNI: {{ cal.alumno.dni }}
+                  </div>
+                </td>
+                <td>{{ cal.materia_examen }}</td>
+                <td>{{ cal.calificacion_obtenida }}</td>
+                <td class="text-end">
+                  <a href="{% url 'editar_calificacion' cal.pk %}"
+                     class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'eliminar_calificacion' cal.pk %}"
+                     class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                No se encontraron calificaciones.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+  <nav aria-label="Paginación de calificaciones">
+    <ul class="pagination pagination-sm justify-content-center mt-3 mb-0">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}">Anterior</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% else %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}&q={{ q }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}">Siguiente</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}

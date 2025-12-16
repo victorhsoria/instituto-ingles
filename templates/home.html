@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Panel - Instituto{% endblock %}
+
+{% block content %}
+<style>
+  /* Fondo suave del dashboard */
+  .dashboard-bg {
+    background:
+      radial-gradient(circle at top left, rgba(13,110,253,0.20), transparent 55%),
+      radial-gradient(circle at top right, rgba(111,66,193,0.18), transparent 55%);
+    border-radius: 1.5rem;
+    padding: 1.5rem 1.5rem 2rem 1.5rem;
+  }
+
+  /* Tarjetas principales */
+  .dash-card {
+    border-radius: 1rem;
+    border: 0;
+    box-shadow: 0 0.35rem 1.2rem rgba(15, 23, 42, 0.18);
+  }
+
+  .dash-card-primary {
+    background: linear-gradient(135deg, #0d6efd, #4bb4ff);
+    color: #fff;
+  }
+  .dash-card-primary .text-muted,
+  .dash-card-primary p,
+  .dash-card-primary h2 {
+    color: #f8f9fa !important;
+  }
+
+  .dash-card-success {
+    background: linear-gradient(135deg, #198754, #4ade80);
+    color: #fff;
+  }
+  .dash-card-success .text-muted,
+  .dash-card-success p,
+  .dash-card-success h2 {
+    color: #e9fbe7 !important;
+  }
+
+  .dash-card-warning {
+    background: linear-gradient(135deg, #ffc107, #ffb347);
+    color: #212529;
+  }
+
+  .dash-card-info {
+    background: linear-gradient(135deg, #0dcaf0, #4f8cff);
+    color: #031633;
+  }
+
+  .dash-label {
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .75rem;
+    font-weight: 600;
+    opacity: .85;
+  }
+
+  /* Tabla últimos pagos */
+  .card-ultimos {
+    border-radius: 1rem;
+    border: 0;
+    box-shadow: 0 0.35rem 1.2rem rgba(15, 23, 42, 0.18);
+  }
+</style>
+
+<div class="dashboard-bg">
+  <!-- Encabezado -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+      <h1 class="h3 mb-1 text-white">Panel del Instituto de Inglés</h1>
+      <p class="mb-0 text-light small">
+        Resumen rápido del día:
+        <strong>{{ hoy|date:"d/m/Y" }}</strong>
+      </p>
+    </div>
+    <div class="text-md-end">
+      <a href="{% url 'lista_alumnos' %}" class="btn btn-light btn-sm me-2">
+        Ver alumnos
+      </a>
+      <a href="{% url 'lista_pagos' %}" class="btn btn-outline-light btn-sm">
+        Ver pagos
+      </a>
+    </div>
+  </div>
+
+  <!-- Tarjetas de resumen -->
+  <div class="row g-3 mb-4">
+    <!-- Alumnos -->
+    <div class="col-12 col-md-3">
+      <div class="card dash-card dash-card-primary h-100">
+        <div class="card-body">
+          <p class="dash-label mb-1">Alumnos</p>
+          <h2 class="h2 mb-0">{{ total_alumnos }}</h2>
+          <p class="mb-0 small">Registrados en el sistema</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagos del mes -->
+    <div class="col-12 col-md-3">
+      <div class="card dash-card dash-card-success h-100">
+        <div class="card-body">
+          <p class="dash-label mb-1">
+            Pagos del mes
+            {% if mes_actual_label %}
+              <span class="badge bg-light text-success ms-1">{{ mes_actual_label }}</span>
+            {% endif %}
+          </p>
+          <h2 class="h2 mb-0">{{ total_pagos_mes }}</h2>
+          <p class="mb-0 small">Pagos registrados este mes</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monto cobrado -->
+    <div class="col-12 col-md-3">
+      <div class="card dash-card dash-card-warning h-100">
+        <div class="card-body">
+          <p class="dash-label mb-1">Monto cobrado este mes</p>
+          <h2 class="h2 mb-0">
+            $ {{ total_monto_mes|floatformat:2 }}
+          </h2>
+          <p class="mb-0 small">Suma de todos los pagos del mes</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado de pagos -->
+    <div class="col-12 col-md-3">
+      <div class="card dash-card dash-card-info h-100">
+        <div class="card-body">
+          <p class="dash-label mb-1">Estado de pagos</p>
+          <h2 class="h5 mb-1">
+            {{ alumnos_con_pago_mes }} con pago
+          </h2>
+          <p class="mb-0 small">
+            <strong>{{ alumnos_sin_pago_mes }}</strong> sin pago este mes
+          </p>
+          <a href="{% url 'reporte_alumnos_sin_pago' %}" class="small d-inline-block mt-2 text-decoration-none fw-semibold">
+            Ver detalle &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Últimos pagos -->
+  <div class="card card-ultimos">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h2 class="h5 mb-0">Últimos pagos registrados</h2>
+      <a href="{% url 'lista_pagos' %}" class="btn btn-sm btn-outline-secondary">
+        Ver todos
+      </a>
+    </div>
+    <div class="card-body p-0">
+      {% if ultimos_pagos %}
+        <div class="table-responsive">
+          <table class="table mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Alumno</th>
+                <th>Mes</th>
+                <th>Fecha pago</th>
+                <th class="text-end">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pago in ultimos_pagos %}
+                <tr>
+                  <td>
+                    {{ pago.alumno.apellido }}, {{ pago.alumno.nombre }}
+                  </td>
+                  <td>{{ pago.get_mes_display }}</td>
+                  <td>{{ pago.fecha_pago|date:"d/m/Y" }}</td>
+                  <td class="text-end">
+                    $ {{ pago.monto|floatformat:2 }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="p-3 mb-0 text-muted">
+          Todavía no hay pagos registrados.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

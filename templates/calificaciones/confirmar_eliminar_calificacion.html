@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar calificación{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Eliminar calificación</h1>
+
+<p>
+  ¿Seguro que querés eliminar la calificación
+  <strong>{{ calificacion.calificacion_obtenida }}</strong>
+  del examen <strong>{{ calificacion.materia_examen }}</strong>
+  del alumno <strong>{{ calificacion.alumno }}</strong>?
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+  <a href="{% url 'detalle_alumno' calificacion.alumno.pk %}" class="btn btn-secondary">
+    Cancelar
+  </a>
+</form>
+{% endblock %}

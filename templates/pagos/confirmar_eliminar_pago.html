@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar pago{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Eliminar pago</h1>
+
+<p>
+  ¿Seguro que querés eliminar el pago de
+  <strong>{{ pago.alumno }}</strong>
+  del mes <strong>{{ pago.get_mes_display }}</strong>
+  {% if pago.mes_correspondiente %}
+    (<strong>{{ pago.mes_correspondiente }}</strong>)
+  {% endif %}
+  por ${{ pago.monto }}?
+
+  {% if pago.concepto_pago %}
+    <br>
+    <small class="text-muted">
+      Concepto: {{ pago.get_concepto_pago_display }}
+    </small>
+  {% endif %}
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+  <a href="{% url 'lista_pagos' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
+

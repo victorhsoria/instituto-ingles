@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Pagos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">
+      <i class="bi bi-cash-stack me-2"></i> Pagos
+    </h1>
+    <p class="text-muted mb-0">
+      Consulta, registra y gestiona los pagos de los alumnos.
+    </p>
+  </div>
+  <div>
+    <a href="{% url 'crear_pago' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-1"></i> Nuevo pago
+    </a>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <form class="row g-3 align-items-end" method="get">
+      <div class="col-md-3">
+        <label class="form-label">Buscar alumno</label>
+        <input
+          type="text"
+          name="q"
+          value="{{ q }}"
+          class="form-control"
+          placeholder="Nombre, apellido o DNI"
+        >
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Mes</label>
+        <select name="mes" class="form-select">
+          <option value="">Todos</option>
+          {% for codigo, nombre in meses %}
+            <option value="{{ codigo }}" {% if mes_seleccionado == codigo %}selected{% endif %}>
+              {{ nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Desde</label>
+        <input
+          type="date"
+          name="desde"
+          value="{{ desde }}"
+          class="form-control"
+        >
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Hasta</label>
+        <input
+          type="date"
+          name="hasta"
+          value="{{ hasta }}"
+          class="form-control"
+        >
+      </div>
+
+      <div class="col-md-3 text-md-end">
+        <button type="submit" class="btn btn-primary me-2">
+          <i class="bi bi-funnel me-1"></i> Filtrar
+        </button>
+        <a href="{% url 'lista_pagos' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-circle me-1"></i> Limpiar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Fecha</th>
+            <th>Alumno</th>
+            <th>Curso</th>
+            <th>Mes</th>
+            <th>Concepto</th>
+            <th class="text-end">Monto</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if pagos %}
+            {% for pago in pagos %}
+              <tr>
+                <td>{{ pago.fecha_pago|date:"d/m/Y" }}</td>
+                <td>
+                  <div class="fw-semibold">
+                    <a
+                      href="{% url 'detalle_alumno' pago.alumno.pk %}"
+                      class="text-decoration-none"
+                    >
+                      {{ pago.alumno.apellido }}, {{ pago.alumno.nombre }}
+                    </a>
+                  </div>
+                  <div class="small text-muted">
+                    DNI: {{ pago.alumno.dni }}
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-curso">
+                    {{ pago.alumno.get_curso_display }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-mes">
+                    {{ pago.get_mes_display }}
+                  </span>
+                  {% if pago.mes_correspondiente %}
+                    <div class="small text-muted">
+                      {{ pago.mes_correspondiente }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if pago.concepto_pago %}
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                      {{ pago.get_concepto_pago_display }}
+                    </span>
+                  {% else %}
+                    <span class="text-muted small">—</span>
+                  {% endif %}
+                </td>
+                <td class="text-end fw-semibold">
+                  $ {{ pago.monto|floatformat:2|intcomma }}
+                </td>
+                <td class="text-end">
+                  <a
+                    href="{% url 'editar_pago' pago.pk %}"
+                    class="btn btn-outline-secondary me-2 px-3 py-2"
+                    title="Editar"
+                  >
+                    <i class="bi bi-pencil me-1"></i>
+                    Editar
+                  </a>
+                  <a
+                    href="{% url 'eliminar_pago' pago.pk %}"
+                    class="btn btn-outline-danger px-3 py-2"
+                    title="Eliminar"
+                  >
+                    <i class="bi bi-trash me-1"></i>
+                    Eliminar
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                <i class="bi bi-inbox me-2"></i>
+                No hay pagos registrados.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+  .badge-curso {
+    background: rgba(13, 110, 253, 0.08);
+    color: #0d6efd;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50rem;
+    font-size: 0.78rem;
+  }
+
+  .badge-mes {
+    background: rgba(25, 135, 84, 0.08);
+    color: #198754;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50rem;
+    font-size: 0.78rem;
+  }
+</style>
+{% endblock %}
