@@ -121,7 +121,7 @@
         <div class="card-body">
           <p class="dash-label mb-1">Monto cobrado este mes</p>
           <h2 class="h2 mb-0">
-            $ {{ total_monto_mes|floatformat:2 }}
+            $ {{ total_monto_mes|floatformat:0 }}
           </h2>
           <p class="mb-0 small">Suma de todos los pagos del mes</p>
         </div>
@@ -176,7 +176,7 @@
                   <td>{{ pago.get_mes_display }}</td>
                   <td>{{ pago.fecha_pago|date:"d/m/Y" }}</td>
                   <td class="text-end">
-                    $ {{ pago.monto|floatformat:2 }}
+                    $ {{ pago.monto|floatformat:0 }}
                   </td>
                 </tr>
               {% endfor %}
