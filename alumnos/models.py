@@ -19,8 +19,9 @@ class Alumno(models.Model):
         ("5TH_INTENSIVE", "5th INTENSIVE"),
         ("6TH_INTENSIVE", "6th INTENSIVE"),
         ("7TH_INTENSIVE", "7th INTENSIVE"),
-        ("CRASH_1", "CRASH 1"),
-        ("CRASH_2", "CRASH 2"),
+        ("CRASH_1", "CRASH 1 - 2"),
+        ("CRASH_3_4", "CRASH 3 - 4"),
+        
     ]
 
     nombre = models.CharField(max_length=50)
